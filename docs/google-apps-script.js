@@ -3,6 +3,7 @@
 // → Extensões → Apps Script → cole tudo → Salvar → Implantar como Web App
 
 const SHEET_NAME      = 'leads'
+const LEAD_SYSTEM_URL = 'https://dermique.netlify.app'
 const SPREADSHEET_ID  = '1PThVD74AGEna2hNbNMXEO5IlNleuqHCZQHqp7CIMsLQ'
 const PIXEL_ID        = '1077563593088467'
 
@@ -124,6 +125,7 @@ function _processarEdicao(e, comUI) {
     _colorirLinha(sheet, row, COR_QUALIFICADO)
     sheet.getRange(row, COL_STATUS).setValue('Qualificado')
     _enviarCapiEvent(phone, leadId, 'QualifiedLead', 'qualificado', null, nome)
+    _enviarGA4Event(leadId, 'QualifiedLead', null)
   } else if (col === COL_COMPROU) {
     _colorirLinha(sheet, row, COR_COMPROU)
     sheet.getRange(row, COL_STATUS).setValue('Comprou')
@@ -140,6 +142,7 @@ function _processarEdicao(e, comUI) {
       }
     }
     _enviarCapiEvent(phone, leadId, 'Purchase', 'comprou', valor, nome)
+    _enviarGA4Event(leadId, 'Purchase', valor)
   } else if (col === COL_DESQUALIFICADO) {
     _colorirLinha(sheet, row, COR_DESQUALIFICADO)
     sheet.getRange(row, COL_STATUS).setValue('Desqualificado')
@@ -200,6 +203,18 @@ function testarCapiPurchase() {
   const ui = SpreadsheetApp.getUi()
   _enviarCapiEvent('5511999999999', 'teste_' + Date.now(), 'Purchase', 'comprou', 500, 'Teste Usuario')
   ui.alert('Resultado do teste CAPI:\n\n' + Logger.getLog())
+}
+
+function _enviarGA4Event(leadId, eventName, valor) {
+  try {
+    const payload = { event_name: eventName, lead_id: leadId, valor: valor }
+    UrlFetchApp.fetch(LEAD_SYSTEM_URL + '/api/ga4', {
+      method: 'post', contentType: 'application/json',
+      payload: JSON.stringify(payload), muteHttpExceptions: true,
+    })
+  } catch (err) {
+    Logger.log('GA4 erro: ' + err.message)
+  }
 }
 
 function _colorirLinha(sheet, row, cor) {

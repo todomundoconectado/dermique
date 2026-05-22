@@ -27,6 +27,9 @@ export default function ObrigadoContent() {
     if (typeof window !== 'undefined' && (window as any).fbq) {
       ;(window as any).fbq('track', 'CompleteRegistration')
     }
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      ;(window as any).gtag('event', 'sign_up')
+    }
     try {
       const raw = sessionStorage.getItem('lead_data')
       if (raw) {
