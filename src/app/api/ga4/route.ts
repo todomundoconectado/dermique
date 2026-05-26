@@ -19,6 +19,8 @@ export async function POST(req: NextRequest) {
       }
     } else if (event_name === 'QualifiedLead') {
       event = { name: 'qualified_lead', params: { engagement_time_msec: 100 } }
+    } else if (event_name === 'DisqualifiedLead') {
+      event = { name: 'disqualified_lead', params: { engagement_time_msec: 100 } }
     }
 
     if (!event) return NextResponse.json({ ok: false, error: 'unknown event' }, { status: 400 })

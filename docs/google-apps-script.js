@@ -147,6 +147,8 @@ function _processarEdicao(e, comUI) {
     _colorirLinha(sheet, row, COR_DESQUALIFICADO)
     sheet.getRange(row, COL_STATUS).setValue('Desqualificado')
     sheet.getRange(row, COL_VALOR).setValue('')
+    _enviarCapiEvent(phone, leadId, 'DisqualifiedLead', 'desqualificado', null, nome)
+    _enviarGA4Event(leadId, 'DisqualifiedLead', null)
   }
 }
 
