@@ -65,6 +65,8 @@ function onOpen() {
     .createMenu('🎯 Qualificador')
     .addItem('⚡ Ativar prompt de valor (fazer uma vez)', 'ativarPromptDeValor')
     .addSeparator()
+    .addItem('📤 Disparar DisqualifiedLead retroativo', 'dispararDesqualificadosRetroativos')
+    .addSeparator()
     .addItem('🧪 Testar envio CAPI (Purchase teste)', 'testarCapiPurchase')
     .addSeparator()
     .addItem('Configurar token da Meta', 'menuConfigurarToken')
@@ -205,6 +207,24 @@ function testarCapiPurchase() {
   const ui = SpreadsheetApp.getUi()
   _enviarCapiEvent('5511999999999', 'teste_' + Date.now(), 'Purchase', 'comprou', 500, 'Teste Usuario')
   ui.alert('Resultado do teste CAPI:\n\n' + Logger.getLog())
+}
+
+function dispararDesqualificadosRetroativos() {
+  const sheet   = getOrCreateSheet()
+  const lastRow = sheet.getLastRow()
+  if (lastRow < 2) return
+  let enviados = 0
+  for (let row = 2; row <= lastRow; row++) {
+    const desq = sheet.getRange(row, COL_DESQUALIFICADO).getValue()
+    if (desq !== true) continue
+    const phone  = String(sheet.getRange(row, COL_TELEFONE).getValue())
+    const leadId = String(sheet.getRange(row, COL_LEAD_ID).getValue())
+    if (!phone || !leadId) continue
+    _enviarCapiEvent(phone, leadId, 'DisqualifiedLead', 'desqualificado', null, '')
+    _enviarGA4Event(leadId, 'DisqualifiedLead', null)
+    enviados++
+  }
+  SpreadsheetApp.getUi().alert('✅ DisqualifiedLead disparado para ' + enviados + ' leads retroativos.')
 }
 
 function _enviarGA4Event(leadId, eventName, valor) {
